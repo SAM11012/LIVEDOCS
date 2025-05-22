@@ -1,10 +1,9 @@
-import { Editor } from '@/components/editor/Editor'
-import React from 'react'
+import { Editor } from "@/components/editor/Editor";
+import Header from "@/components/Header";
+import React from "react";
 
 const Document = () => {
-  return (
-    <div><Editor/></div>
-  )
-}
+  return <div></div>;
+};
 
-export default Document
+export default Document;
