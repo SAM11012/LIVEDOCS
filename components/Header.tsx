@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import {
   SignedIn,
   SignedOut,
@@ -9,9 +10,14 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const Header = ({ children }: HeaderProps) => {
+const Header = ({ children, className }: HeaderProps) => {
   return (
-    <div className=" min-h-[92px] min-w-full flex-nowrap bg-dark-100 flex w-full items-center justify-between gap-2 px-4">
+    <div
+      className={cn(
+        "min-h-[92px] min-w-full flex-nowrap bg-dark-100 flex w-full items-center justify-between gap-2 px-4",
+        className
+      )}
+    >
       <Link href="/" className="md:flex-1">
         <Image
           src="/assets/icons/logo.svg"
@@ -33,9 +39,9 @@ const Header = ({ children }: HeaderProps) => {
       <SignedOut>
         <SignInButton />
       </SignedOut>
-      <SignedIn>
+      {/* <SignedIn>
         <UserButton />
-      </SignedIn>
+      </SignedIn> */} 
     </div>
   );
 };
