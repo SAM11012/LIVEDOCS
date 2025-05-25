@@ -1,15 +1,26 @@
-'use client';
+"use client";
 
-import Theme from './plugins/Theme';
-import ToolbarPlugin from './plugins/ToolbarPlugin';
-import { HeadingNode } from '@lexical/rich-text';
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import React from 'react';
+import Theme from "./plugins/Theme";
+import ToolbarPlugin from "./plugins/ToolbarPlugin";
+import { HeadingNode } from "@lexical/rich-text";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import React from "react";
+import {
+  FloatingComposer,
+  FloatingThreads,
+  liveblocksConfig,
+  LiveblocksPlugin,
+  useEditorStatus,
+} from "@liveblocks/react-lexical";
+import Loader from "../Loader";
+import FloatingToolbar from "./plugins/FlootingToolbarPlugin";
+import { useThreads } from "@liveblocks/react/suspense";
+import Comments from "../Comments";
 
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will
@@ -19,32 +30,56 @@ function Placeholder() {
   return <div className="editor-placeholder">Enter some rich text...</div>;
 }
 
-export function Editor() {
-  const initialConfig = {
-    namespace: 'Editor',
+export function Editor({
+  roomId,
+  currentUserType,
+}: {
+  roomId: string;
+  currentUserType: UserType;
+}) {
+  const status = useEditorStatus();
+  const initialConfig = liveblocksConfig({
+    namespace: "Editor",
     nodes: [HeadingNode],
     onError: (error: Error) => {
       console.error(error);
       throw error;
     },
     theme: Theme,
-  };
-
+    editable: currentUserType === "editor",
+  });
+  const { threads } = useThreads();
+  console.log(threads, "teh threax");
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="editor-container size-full">
-        <ToolbarPlugin />
+        <div className="z-50 custom-scrollbar w-screen overflow-auto border-y border-dark-300 bg-dark-100 pl-3 pr-4 shadow-sm flex min-w-full justify-between">
+          <ToolbarPlugin />
+        </div>
+        <div className="flex flex-col items-center justify-start custom-scrollbar h-[calc(100vh-140px)] gap-5 overflow-auto px-5 pt-5 lg:flex-row lg:items-start lg:justify-center  xl:gap-10 xl:pt-10">
+          {status === "not-loaded" || status === "loading" ? (
+            <Loader />
+          ) : (
+            <div className="editor-inner min-h-[1100px] relative mb-5 h-fit w-full max-w-[800px] shadow-md lg:mb-10">
+              <RichTextPlugin
+                contentEditable={
+                  <ContentEditable className="editor-input h-full" />
+                }
+                placeholder={<Placeholder />}
+                ErrorBoundary={LexicalErrorBoundary}
+              />
+              {currentUserType === "editor" && <FloatingToolbar />}
+              <HistoryPlugin />
+              <AutoFocusPlugin />
+            </div>
+          )}
 
-        <div className="editor-inner h-[1100px]">
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable className="editor-input h-full" />
-            }
-            placeholder={<Placeholder />}
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
+          <LiveblocksPlugin>
+            <FloatingComposer className="w-[350px]" />
+
+            <FloatingThreads threads={threads} />
+            <Comments />
+          </LiveblocksPlugin>
         </div>
       </div>
     </LexicalComposer>
